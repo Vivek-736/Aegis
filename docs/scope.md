@@ -200,30 +200,20 @@ Exit criteria: upload, history, and quiz all work end-to-end.
 
 ---
 
-### Phase 3 — Analysis Engine ✦ CURRENT
+### Phase 3 — Analysis Engine ✅
 
 **Goal:** all three signal streams producing real results; full risk report rendered.
 
-- [ ] **QR stream:** `@zxing/browser` decodes QR codes from uploaded images.
-- [ ] **OCR stream:** Puter + Gemini extracts text from image/document; Zod validation.
-- [ ] **Linguistic stream:**
-  - `phishing-detection` and `bad-words` integration.
-  - Custom SMS corpus matcher in `lib/analysis/sms-corpus.ts`.
-  - Output: `LinguisticSignal { score, matched, unavailable }`.
-- [ ] **Infrastructure stream:**
-  - WHOIS domain age, DNS A/MX, HTTPS, redirect chain, SURBL/URLhaus feed.
-  - Output: `InfrastructureSignal { score, provenance, unavailable }`.
-- [ ] **Visual stream (Browserbase):**
-  - Open submitted URL in Browserbase remote browser.
-  - Capture screenshot + DOM form signals.
-  - Feed screenshot to Gemini vision; Zod-validate output.
-  - Embed live Browserbase session viewer in `/report/[id]`.
-  - Output: `VisualSignal { score, screenshotUrl, formDetected, unavailable }`.
-- [ ] **Risk fusion:** deterministic weighted sum → `RiskResult { score, label, weights, version }`.
-- [ ] **Nemotron explanation:** POST structured signals to OpenRouter; receive and store explanation string; validate non-empty.
-- [ ] Persist completed report; update analysis status to `complete`.
-- [ ] `/report/[id]` renders: live Browserbase embed, signal scores, evidence list, explanation.
-- [ ] Smoke check: one benign sample + one phishing sample produce correct labels.
+- [x] Step 1: Types & interfaces for artifacts, signals, fusion result, and explanation (`lib/analysis/types.ts`).
+- [x] Step 2: Linguistic stream & SMS corpus (`lib/analysis/sms-corpus.ts`, `lib/analysis/linguistic.ts`).
+- [x] Step 3: Infrastructure stream: DNS, HTTPS, domain age, threat feed check (`lib/analysis/infrastructure.ts`).
+- [x] Step 4: Visual stream & Browserbase session rendering (`lib/analysis/visual.ts`).
+- [x] Step 5: QR decoding (`@zxing/library`) & OCR text extraction (`lib/analysis/qr.ts`, `lib/analysis/ocr.ts`).
+- [x] Step 6: Risk fusion engine (`lib/analysis/fusion.ts`).
+- [x] Step 7: OpenRouter Nemotron explanation generator (`lib/analysis/explanation.ts`).
+- [x] Step 8: Pipeline orchestrator & `/api/analyse` update to run synchronous pipeline and persist records (`lib/analysis/pipeline.ts`).
+- [x] Step 9: Upgrade `/report/[id]` page to display complete report (signals breakdown, evidence list, explanation, Browserbase session/screenshot).
+- [x] Step 10: Validation & smoke testing complete.
 
 Exit criteria: full end-to-end analysis completes; report is reproducible from
 stored signal data.

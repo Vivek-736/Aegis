@@ -17,6 +17,7 @@ export function NewAnalysisPanel() {
   const [smsInput, setSmsInput] = useState("");
   const [uploadedFile, setUploadedFile] = useState<{ key: string; url: string; name: string } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
@@ -38,7 +39,12 @@ export function NewAnalysisPanel() {
       body = { inputType: "sms", inputText: smsInput.trim() };
     } else {
       if (!uploadedFile) { setError("Please upload a file first."); setLoading(false); return; }
-      body = { inputType: "image", fileKey: uploadedFile.key, fileUrl: uploadedFile.url };
+      const isPdf = uploadedFile.name.toLowerCase().endsWith(".pdf");
+      body = {
+        inputType: isPdf ? "document" : "image",
+        fileKey: uploadedFile.key,
+        fileUrl: uploadedFile.url,
+      };
     }
 
     try {
@@ -47,11 +53,15 @@ export function NewAnalysisPanel() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Server error occurred");
+      }
       const { id } = await res.json() as { id: string };
       router.push(`/report/${id}`);
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      setError(msg);
       setLoading(false);
     }
   };
@@ -132,20 +142,46 @@ export function NewAnalysisPanel() {
                 </button>
               </div>
             ) : (
-              <UploadDropzone
-                endpoint="imageOrDocument"
-                onClientUploadComplete={(res) => {
-                  const f = res[0];
-                  if (f) setUploadedFile({ key: f.key, url: f.ufsUrl, name: f.name });
-                }}
-                onUploadError={(err) => setError(err.message)}
-                className="ut-label:text-foreground ut-allowed-content:text-muted-foreground ut-button:bg-foreground ut-button:text-background"
-                content={{
-                  uploadIcon: (
-                    <UploadIcon className="w-10 h-10" />
-                  ),
-                }}
-              />
+              <div className="relative">
+                {isUploading && (
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-2xl bg-card/85 backdrop-blur-xs">
+                    <Loader2 className="size-6 animate-spin text-blue-accent" />
+                    <p className="mt-2 text-xs font-medium text-foreground">Uploading artifact…</p>
+                  </div>
+                )}
+                <UploadDropzone
+                  endpoint="imageOrDocument"
+                  config={{ mode: "auto" }}
+                  onUploadBegin={() => {
+                    setIsUploading(true);
+                    setError(null);
+                  }}
+                  onClientUploadComplete={(res) => {
+                    setIsUploading(false);
+                    const f = res[0];
+                    if (f) {
+                      const downloadUrl =
+                        (f as { ufsUrl?: string; url?: string }).ufsUrl ||
+                        (f as { url?: string }).url ||
+                        `https://utfs.io/f/${f.key}`;
+                      setUploadedFile({ key: f.key, url: downloadUrl, name: f.name });
+                      setError(null);
+                    }
+                  }}
+                  onUploadError={(err) => {
+                    setIsUploading(false);
+                    console.error("[UploadThing Error]", err);
+                    setError(err.message || "Failed to upload file. Please check file format and size.");
+                  }}
+                  appearance={{
+                    uploadIcon: "w-8 h-8 text-muted-foreground stroke-1",
+                    container: "border-dashed border-2 border-border p-6 rounded-2xl bg-muted/10",
+                    label: "text-xs font-medium text-foreground mt-2",
+                    allowedContent: "text-[11px] text-muted-foreground mt-1",
+                    button: "text-xs bg-foreground text-background font-medium px-4 py-2 rounded-xl mt-3",
+                  }}
+                />
+              </div>
             )}
             <p className="text-xs text-muted-foreground">
               PNG, JPG, WebP, GIF, or PDF — max 10 MB. QR codes inside images are automatically decoded.
@@ -162,7 +198,7 @@ export function NewAnalysisPanel() {
 
         <button
           onClick={handleSubmit}
-          disabled={loading}
+          disabled={loading || isUploading}
           className={cn(
             buttonVariants({ size: "lg" }),
             "mt-6 w-full gap-2"
@@ -170,6 +206,8 @@ export function NewAnalysisPanel() {
         >
           {loading ? (
             <><Loader2 className="size-4 animate-spin" /> Analysing…</>
+          ) : isUploading ? (
+            <><Loader2 className="size-4 animate-spin" /> Uploading file…</>
           ) : (
             <>Analyse <ArrowRight className="size-4" /></>
           )}
