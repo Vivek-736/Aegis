@@ -1,0 +1,143 @@
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "@/lib/utils"
+
+const cardVariants = cva(
+  "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl py-(--card-spacing) text-sm transition-all [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+  {
+    variants: {
+      variant: {
+        default:
+          "bg-card text-card-foreground border border-border shadow-xs",
+        evidence:
+          "bg-muted text-muted-foreground border border-border shadow-xs",
+        signal:
+          "bg-muted text-muted-foreground border border-border shadow-xs",
+        qr:
+          "bg-muted text-muted-foreground border-2 border-border shadow-sm",
+        infrastructure:
+          "bg-muted text-muted-foreground border-2 border-border shadow-sm",
+        visual:
+          "bg-muted text-muted-foreground border-2 border-border shadow-sm",
+        linguistic:
+          "bg-muted text-muted-foreground border-2 border-border shadow-sm",
+        safe:
+          "bg-status-safe-subtle text-card-foreground border-2 border-status-safe-border shadow-sm",
+        suspicious:
+          "bg-status-suspicious-subtle text-card-foreground border-2 border-status-suspicious-border shadow-sm",
+        critical:
+          "bg-status-critical-subtle text-card-foreground border-2 border-status-critical-border shadow-sm",
+        empty:
+          "border-2 border-dashed border-border bg-muted/30 text-muted-foreground items-center justify-center p-8 text-center",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
+export interface CardProps
+  extends React.ComponentProps<"div">,
+    VariantProps<typeof cardVariants> {
+  size?: "default" | "sm"
+}
+
+function Card({
+  className,
+  size = "default",
+  variant,
+  ...props
+}: CardProps) {
+  return (
+    <div
+      data-slot="card"
+      data-size={size}
+      className={cn(cardVariants({ variant }), className)}
+      {...props}
+    />
+  )
+}
+
+function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-header"
+      className={cn(
+        "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-xl px-(--card-spacing) has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-(--card-spacing)",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-title"
+      className={cn(
+        "font-heading text-base leading-snug font-semibold text-foreground",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-description"
+      className={cn("text-xs text-muted-foreground", className)}
+      {...props}
+    />
+  )
+}
+
+function CardAction({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-action"
+      className={cn(
+        "col-start-2 row-span-2 row-start-1 self-start justify-self-end",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function CardContent({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-content"
+      className={cn("px-(--card-spacing)", className)}
+      {...props}
+    />
+  )
+}
+
+function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-footer"
+      className={cn(
+        "flex items-center rounded-b-xl border-t border-border/50 bg-muted/40 p-(--card-spacing)",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardAction,
+  CardDescription,
+  CardContent,
+  cardVariants,
+}

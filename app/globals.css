@@ -1,0 +1,379 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-roboto-condensed), sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-blue-accent: var(--blue-accent);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-phish-mint: var(--phish-mint);
+  --color-phish-peach: var(--phish-peach);
+  --color-phish-blush: var(--phish-blush);
+  --color-phish-sky: var(--phish-sky);
+  --color-phish-pink: var(--phish-pink);
+}
+
+:root {
+  --background: #fafafa;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #0a0a0a;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #e4e4e7;
+  --accent-foreground: #18181b;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #3b82f6;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --blue-accent: #3b82f6;
+  --surface-tint: rgba(255, 255, 255, 0.9);
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --card: #141414;
+  --card-foreground: #fafafa;
+  --popover: #141414;
+  --popover-foreground: #fafafa;
+  --primary: #fafafa;
+  --primary-foreground: #0a0a0a;
+  --secondary: #1a1a1a;
+  --secondary-foreground: #e4e4e7;
+  --muted: #1a1a1a;
+  --muted-foreground: #a1a1aa;
+  --accent: #1f1f1f;
+  --accent-foreground: #fafafa;
+  --border: #272727;
+  --input: #272727;
+  --ring: #3b82f6;
+  --blue-accent: #3b82f6;
+  --surface-tint: rgba(20, 20, 20, 0.9);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Hide scrollbar universally */
+html, body, * {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox */
+}
+
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.app-shell {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.dark .app-shell {
+  background:
+    radial-gradient(
+      ellipse at 50% 0%,
+      color-mix(in srgb, #3b82f6 8%, transparent),
+      transparent 60%
+    ),
+    var(--background);
+}
+
+.app-shell .text-white {
+  color: var(--foreground) !important;
+}
+.app-shell .text-white\/90,
+.app-shell .text-white\/80 {
+  color: var(--foreground) !important;
+}
+.app-shell .text-white\/70 {
+  color: var(--foreground) !important;
+}
+.app-shell .text-white\/60 {
+  color: var(--muted-foreground) !important;
+}
+.app-shell .text-white\/50,
+.app-shell .text-white\/45,
+.app-shell .text-white\/40 {
+  color: var(--muted-foreground) !important;
+}
+.app-shell .bg-black\/50,
+.app-shell .bg-black\/60 {
+  background-color: color-mix(
+    in srgb,
+    var(--background) 86%,
+    transparent
+  ) !important;
+}
+.app-shell .border-white\/10,
+.app-shell .border-white\/15,
+.app-shell .border-white\/20,
+.app-shell .border-white\/25 {
+  border-color: var(--border) !important;
+}
+  .app-shell .bg-white\/15,
+  .app-shell .bg-white\/20 {
+    background-color: var(--surface-tint) !important;
+  }
+.app-shell .bg-white {
+  background-color: var(--card) !important;
+}
+.app-shell .text-slate-950 {
+  color: var(--foreground) !important;
+}
+.app-shell .text-transparent {
+  color: var(--foreground) !important;
+  background-image: none !important;
+}
+.app-shell .placeholder\:text-white\/45::placeholder {
+  color: color-mix(in srgb, var(--foreground) 55%, transparent) !important;
+}
+.app-shell [class*="text-white"] {
+  color: var(--foreground) !important;
+}
+.app-shell [class*="text-white/60"],
+.app-shell [class*="text-white/50"],
+.app-shell [class*="text-white/45"],
+.app-shell [class*="text-white/40"],
+.app-shell [class*="text-white/35"] {
+  color: var(--muted-foreground) !important;
+}
+.app-shell [class*="text-black"],
+.app-shell [class*="text-slate-950"] {
+  color: var(--foreground) !important;
+}
+.app-shell [class*="text-transparent"] {
+  color: var(--foreground) !important;
+  -webkit-text-fill-color: var(--foreground) !important;
+  background-image: none !important;
+}
+.app-shell [class*="text-purple"],
+.app-shell [class*="text-indigo"],
+.app-shell [class*="text-cyan"] {
+  color: var(--primary) !important;
+}
+.app-shell [class*="border-purple"],
+.app-shell [class*="border-indigo"],
+.app-shell [class*="border-cyan"] {
+  border-color: color-mix(in srgb, var(--primary) 46%, var(--border)) !important;
+}
+.app-shell [class*="bg-purple"],
+.app-shell [class*="bg-indigo"],
+.app-shell [class*="bg-cyan"] {
+  background-color: color-mix(in srgb, var(--primary) 14%, transparent) !important;
+}
+.app-shell .iridescent-card,
+.app-shell .liquid-glass,
+.app-shell .glass-pill {
+  background: var(--surface-tint);
+  border-color: var(--border);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--ocean-deep) 10%, transparent);
+}
+
+.theme-surface {
+  background: var(--surface-tint);
+  border-color: var(--border);
+}
+
+/* ─── Core card surface — fluid ribbon wash ───────────────────────── */
+.iridescent-card {
+  background: linear-gradient(
+    140deg,
+    rgba(26, 20, 80, 0.55) 0%,
+    rgba(50, 35, 130, 0.3) 22%,
+    rgba(79, 55, 220, 0.12) 42%,
+    rgba(120, 60, 200, 0.08) 60%,
+    rgba(180, 100, 220, 0.06) 78%,
+    rgba(12, 8, 30, 0.7) 100%
+  );
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid rgba(160, 130, 255, 0.14);
+  box-shadow:
+    0 8px 40px 0 rgba(0, 0, 0, 0.5),
+    0 1px 0 0 rgba(180, 140, 255, 0.18) inset,
+    0 -1px 0 0 rgba(79, 55, 220, 0.1) inset;
+  position: relative;
+}
+
+/* Pearl shimmer top-edge pseudo — mimics the ribbon highlight line */
+.iridescent-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(210, 180, 255, 0.45) 30%,
+    rgba(255, 220, 240, 0.6) 50%,
+    rgba(210, 180, 255, 0.45) 70%,
+    transparent 100%
+  );
+  border-radius: 9999px;
+  pointer-events: none;
+}
+
+/* ─── Glowing border variant ───────────────────────────────────────── */
+.iridescent-border-glow {
+  border: 1px solid rgba(130, 90, 255, 0.35);
+  box-shadow:
+    0 0 24px -4px rgba(79, 55, 220, 0.4),
+    0 0 60px -20px rgba(180, 100, 220, 0.25),
+    inset 0 1px 1px rgba(210, 180, 255, 0.22);
+}
+
+/* ─── Liquid glass — ultra-subtle surface ──────────────────────────── */
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.01);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(255, 255, 255, 0.15) 20%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(255, 255, 255, 0.15) 80%,
+    rgba(255, 255, 255, 0.45) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ─── Glass pill nav/badge ─────────────────────────────────────────── */
+.glass-pill {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-radius: 9999px;
+  box-shadow: none !important;
+}
+
+/* ─── Section divider gradient line ───────────────────────────────── */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(79, 55, 220, 0.4) 20%,
+    rgba(180, 100, 220, 0.55) 50%,
+    rgba(79, 55, 220, 0.4) 80%,
+    transparent 100%
+  );
+  border: none;
+  margin: 0;
+}
+
+/* ─── Ambient glow blob helper ─────────────────────────────────────── */
+.ambient-cobalt {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(26, 20, 140, 0.25) 0%,
+    transparent 70%
+  );
+}
+
+.ambient-violet {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(120, 60, 200, 0.2) 0%,
+    transparent 70%
+  );
+}
+
+.ambient-rose {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(180, 80, 160, 0.15) 0%,
+    transparent 70%
+  );
+}
+
+/* ─── Scrollbar styling ────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(79, 55, 220, 0.35);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(130, 90, 255, 0.55);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
