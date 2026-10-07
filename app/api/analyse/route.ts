@@ -5,6 +5,7 @@ import { analyses, artifacts, signals, reports } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { runAnalysisPipeline } from "@/lib/analysis/pipeline";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 const bodySchema = z.discriminatedUnion("inputType", [
   z.object({ inputType: z.literal("url"), inputText: z.string().url() }),
@@ -16,13 +17,36 @@ const bodySchema = z.discriminatedUnion("inputType", [
   }),
 ]);
 
+const PIPELINE_TIMEOUT_MS = 55000; // 55-second ceiling for Next.js 60s limit
+
 export async function POST(req: Request) {
   try {
     const { userId } = await auth();
-    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+    if (!userId) {
+      return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    }
+
+    // Rate limiting: max 10 analyses per user per hour
+    const rateLimit = checkRateLimit(userId);
+    if (!rateLimit.allowed) {
+      const waitMin = Math.ceil((rateLimit.retryAfterSeconds || 60) / 60);
+      return NextResponse.json(
+        {
+          error: `Rate limit reached (10 analyses/hour). Please wait ${waitMin} minute${waitMin > 1 ? "s" : ""} before submitting another analysis.`,
+        },
+        { status: 429 }
+      );
+    }
 
     const json = await req.json();
-    const body = bodySchema.parse(json);
+    const parseResult = bodySchema.safeParse(json);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "Invalid submission payload. Please check your input." },
+        { status: 422 }
+      );
+    }
+    const body = parseResult.data;
 
     const id = crypto.randomUUID();
 
@@ -37,13 +61,20 @@ export async function POST(req: Request) {
       status: "running",
     });
 
-    // 2. Run multimodal analysis pipeline synchronously
+    // 2. Run multimodal analysis pipeline with 55s timeout ceiling
     try {
-      const result = await runAnalysisPipeline({
-        inputType: body.inputType,
-        inputText: "inputText" in body ? body.inputText : null,
-        fileUrl: "fileUrl" in body ? body.fileUrl : null,
-      });
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Analysis pipeline timed out (55s limit)")), PIPELINE_TIMEOUT_MS)
+      );
+
+      const result = await Promise.race([
+        runAnalysisPipeline({
+          inputType: body.inputType,
+          inputText: "inputText" in body ? body.inputText : null,
+          fileUrl: "fileUrl" in body ? body.fileUrl : null,
+        }),
+        timeoutPromise,
+      ]);
 
       // Persist artifacts
       for (const art of result.artifacts) {
@@ -98,11 +129,11 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ id });
-  } catch (err) {
-    if (err instanceof z.ZodError) {
-      return NextResponse.json({ error: err.flatten() }, { status: 422 });
-    }
+  } catch (err: unknown) {
     console.error("[ANALYSE]", err);
-    return new NextResponse("Internal Error", { status: 500 });
+    return NextResponse.json(
+      { error: "An unexpected error occurred while processing your analysis. Please try again." },
+      { status: 500 }
+    );
   }
 }

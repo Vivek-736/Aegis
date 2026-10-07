@@ -29,7 +29,7 @@ export function DashboardSidebar() {
   return (
     <aside
       className={cn(
-        "sticky top-0 flex h-screen flex-col border-r border-border bg-card transition-[width] duration-200",
+        "sticky top-0 flex h-screen flex-col border-r border-black/[0.05] bg-white transition-[width] duration-200 z-30",
         collapsed ? "w-16" : "w-60"
       )}
     >
@@ -39,7 +39,8 @@ export function DashboardSidebar() {
         onClick={() => setCollapsed((c) => !c)}
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         aria-expanded={!collapsed}
-        className="absolute -right-3 top-12 z-10 flex size-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="absolute -right-3 top-12 z-10 flex size-6 items-center justify-center rounded-full border border-black/[0.08] bg-white shadow-xs transition-colors hover:text-[#1A0B54] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CA45FF]"
+        style={{ color: "rgb(131, 121, 158)" }}
       >
         {collapsed ? (
           <PanelLeftOpen className="size-3.5" />
@@ -53,18 +54,28 @@ export function DashboardSidebar() {
         href="/"
         title={collapsed ? "PhishCatcher home" : undefined}
         className={cn(
-          "flex items-center gap-3 border-b border-border px-5 py-4 hover:opacity-80 transition-opacity",
+          "flex items-center gap-3 border-b border-black/[0.05] px-5 py-4 transition-opacity hover:opacity-85",
           collapsed && "justify-center px-0"
         )}
       >
-        <Image src="/logo.svg" alt="PhishCatcher" width={28} height={28} priority />
+        <span
+          className="flex size-8 items-center justify-center rounded-xl"
+          style={{
+            backgroundColor: "rgb(249, 249, 249)",
+            boxShadow: "0 3px 9.1px #3f4a7e0d, 0 1px 29px #3f4a7e1a",
+          }}
+        >
+          <Image src="/logo.svg" alt="PhishCatcher" width={20} height={20} priority />
+        </span>
         {!collapsed && (
-          <span className="font-bold tracking-tight text-foreground">PhishCatcher</span>
+          <span className="font-medium tracking-tight text-base" style={{ color: "rgb(26, 11, 84)" }}>
+            PhishCatcher
+          </span>
         )}
       </Link>
 
       {/* Nav */}
-      <nav className="flex-1 space-y-1 p-3 pt-4">
+      <nav className="flex-1 space-y-1.5 p-3 pt-4">
         {NAV.map(({ href, label, icon: Icon, exact }) => {
           const active = exact ? pathname === href : pathname.startsWith(href);
           return (
@@ -74,24 +85,31 @@ export function DashboardSidebar() {
               title={collapsed ? label : undefined}
               aria-label={collapsed ? label : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-xl py-2.5 text-sm font-medium transition-colors",
-                collapsed ? "justify-center px-0" : "px-4",
-                active
-                  ? "bg-foreground text-background"
-                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                "flex items-center gap-3 rounded-[14px] py-2.5 text-sm font-medium transition-colors",
+                collapsed ? "justify-center px-0" : "px-4"
               )}
+              style={{
+                backgroundColor: active ? "rgb(26, 11, 84)" : "transparent",
+                color: active ? "#ffffff" : "rgb(131, 121, 158)",
+                boxShadow: active ? "0 4px 14px rgba(26, 11, 84, 0.15)" : "none",
+              }}
             >
               <Icon className="size-4 shrink-0" />
-              {!collapsed && label}
+              {!collapsed && <span>{label}</span>}
             </Link>
           );
         })}
       </nav>
 
-      <div className={cn("border-t border-border p-4", collapsed && "flex justify-center p-3")}>
+      {/* Footer Profile */}
+      <div className={cn("border-t border-black/[0.05] p-4", collapsed && "flex justify-center p-3")}>
         <div className={cn("flex items-center gap-3", collapsed && "gap-0")}>
           <UserButton afterSignOutUrl="/" />
-          {!collapsed && <span className="text-xs text-muted-foreground">Account</span>}
+          {!collapsed && (
+            <span className="text-xs font-medium" style={{ color: "rgb(131, 121, 158)" }}>
+              Account Settings
+            </span>
+          )}
         </div>
       </div>
     </aside>

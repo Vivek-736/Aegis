@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { DashboardSidebar } from "@/components/dashboard/sidebar";
+import { DashboardNavbar } from "@/components/dashboard/navbar";
 import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({
@@ -11,9 +11,16 @@ export default async function DashboardLayout({
   if (!userId) redirect("/sign-in");
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <DashboardSidebar />
-      <main className="flex-1 overflow-y-auto">
+    <div
+      className="min-h-screen w-full flex flex-col"
+      style={{
+        backgroundColor: "#ffffff",
+        color: "rgb(26, 11, 84)",
+        fontFamily: "'Mazzard H', sans-serif",
+      }}
+    >
+      <DashboardNavbar />
+      <main className="flex-1 w-full">
         {children}
       </main>
     </div>

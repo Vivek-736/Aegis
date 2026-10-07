@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
@@ -19,6 +20,18 @@ import {
 import { CopyButton } from "@/components/ui/copy-button";
 import { GeoMap } from "@/components/ui/geo-map";
 import { HighlightedSummary } from "@/components/ui/highlighted-summary";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  return {
+    title: `Threat Analysis Report #${id.slice(0, 8)} — PhishCatcher`,
+    description: "Multimodal forensic analysis report with linguistic, infrastructure, and isolated visual telemetry.",
+  };
+}
 
 const LABEL_CONFIG = {
   safe: {

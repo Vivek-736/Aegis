@@ -97,7 +97,7 @@ ${signalSummary.join("\n")}
         const content = data.choices?.[0]?.message?.content;
         if (typeof content === "string" && content.trim().length > 0) {
           // Strip any residual thinking tags or preamble
-          let clean = content
+          const clean = content
             .replace(/<think>[\s\S]*?<\/think>/gi, "")
             .replace(/Here'?s a thinking process:[\s\S]*?(?=\n\n[A-Z]|$)/gi, "")
             .trim();

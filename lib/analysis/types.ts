@@ -102,6 +102,45 @@ export interface ExplanationResult {
   explanation: string;
 }
 
+// ── Attack Chain Reconstruction Models ───────────────────────────────────────
+export type AttackStageType =
+  | "input"
+  | "social-engineering"
+  | "brand-impersonation"
+  | "qr"
+  | "url"
+  | "redirect"
+  | "domain"
+  | "visual-deception"
+  | "credential-harvesting"
+  | "malicious-destination";
+
+export type AttackStageSeverity = "low" | "medium" | "high" | "critical" | "neutral";
+
+export interface AttackStage {
+  id: string;
+  type: AttackStageType;
+  title: string;
+  description: string;
+  educationalContext: string;
+  severity: AttackStageSeverity;
+  evidence: string[];
+  sourceSignalIds: string[];
+}
+
+export interface AttackChain {
+  version: "v1";
+  stages: AttackStage[];
+  detectedTechniques: string[];
+  summary: {
+    deliveryMethod: string;
+    primaryDeception?: string;
+    destinationDomain?: string;
+    credentialCollectionDetected: boolean;
+    qrInvolvementDetected: boolean;
+  };
+}
+
 export interface AnalysisPipelineResult {
   artifacts: ArtifactResult[];
   signals: AnySignal[];
@@ -109,4 +148,5 @@ export interface AnalysisPipelineResult {
   explanation: string;
   screenshotUrl?: string;
   browserbaseSessionId?: string;
+  attackChain?: AttackChain;
 }

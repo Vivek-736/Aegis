@@ -22,7 +22,8 @@ export const ourFileRouter = {
       return { userId };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      return { uploadedBy: metadata.userId, fileUrl: file.ufsUrl, fileKey: file.key };
+      const fileUrl = file.ufsUrl || (file as { url?: string }).url || `https://utfs.io/f/${file.key}`;
+      return { uploadedBy: metadata.userId, fileUrl, fileKey: file.key };
     }),
 } satisfies FileRouter;
 

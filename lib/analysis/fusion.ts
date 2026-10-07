@@ -25,9 +25,9 @@ export function fuseRiskScores(signals: readonly AnySignal[]): FusionResult {
   const visualScore = visualSignal && visualSignal.score !== null ? visualSignal.score : null;
 
   // Base weights for the primary streams
-  let lingWeight = 0.30;
-  let infraWeight = 0.35;
-  let visWeight = 0.25;
+  const lingWeight = 0.30;
+  const infraWeight = 0.35;
+  const visWeight = 0.25;
 
   // Re-distribute weights if any stream is genuinely unavailable
   const availableStreams: { stream: string; baseWeight: number; score: number }[] = [];

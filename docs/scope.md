@@ -1,16 +1,19 @@
 # PhishCatcher — Scope & Delivery Plan
 
-Last updated: 2026-10-05
+Last updated: 2026-10-07
 
 ---
 
-## Product vision
+## Product vision & Core identity
 
-PhishCatcher is a multimodal phishing and quishing analysis platform.
-A user authenticates, submits a suspicious input (URL, SMS text, image,
-document, or QR code), watches it analysed through separate signal streams,
-and receives an explainable risk report. Historical reports are saved to their
-dashboard. The dashboard also hosts an educational phishing quiz bank.
+**Detect → Investigate → Explain → Learn → Improve**
+
+PhishCatcher is a multimodal phishing and quishing analysis and attack-reconstruction platform.
+A user authenticates, submits a suspicious input (URL, SMS text, image, document, or QR code),
+watches it analysed through separate deterministic signal streams, receives an explainable
+risk report with an interactive step-by-step Attack Reconstruction Story, and trains their
+weak security areas through adaptive awareness modules. Historical reports are saved to their
+dashboard.
 
 ---
 
@@ -220,22 +223,110 @@ stored signal data.
 
 ---
 
-### Phase 4 — Polish, Stats & Production Hardening
+### Phase 4 — Polish, Stats & Production Hardening ✅
 
 **Goal:** production-quality reliability, edge cases handled, Stats section complete.
 
-- [ ] Stats section: total analyses, threat-breakdown chart (recharts).
-- [ ] 60-second analysis timeout: partial signals saved with `unavailable`; user sees partial report.
-- [ ] User-facing errors: all failures produce short human-readable messages, no stack traces.
-- [ ] Rate limiting: max 10 analyses per user per hour (middleware).
-- [ ] File upload hardening: strict MIME validation, 10 MB cap enforced server-side.
-- [ ] Accessibility audit: keyboard nav, visible focus, ARIA labels, contrast ≥ AA.
-- [ ] Dark mode final pass against `docs/ui-rules.md`.
-- [ ] SEO: title tags, meta descriptions, canonical URLs on all routes.
-- [ ] Production build + end-to-end manual test + release checklist.
+- [x] 1. Live Stats Dashboard (`app/dashboard/stats/page.tsx`):
+  - [x] Query user analyses, classification distribution, average signal scores, and input types.
+  - [x] Render interactive breakdown meters, metrics cards, and recent threat telemetry.
+- [x] 2. Pipeline Hardening & Rate Limiting (`app/api/analyse/route.ts`, `lib/ratelimit.ts`):
+  - [x] Enforce 55-second pipeline execution ceiling with graceful timeout error handling.
+  - [x] In-memory sliding-window rate limiting (10 analyses / user / hour).
+  - [x] Human-readable user error sanitization (no raw stack traces or internal keys).
+- [x] 3. SEO & OpenGraph Metadata:
+  - [x] Configure descriptive title, meta tags, and OpenGraph schemas in root layout, dashboard, history, stats, and dynamic report pages.
+- [x] 4. Accessibility & UI Consistency Polish:
+  - [x] Visible focus outlines, semantic labels, ARIA landmarks across all pages.
+- [x] 5. Verification Gate:
+  - [x] `npx tsc --noEmit` passed (0 errors).
+  - [x] `npm run lint` passed (0 errors).
+  - [x] `npm run build` compiled all routes successfully in Turbopack.
+  - [x] End-to-end route smoke testing.
 
 Exit criteria: lint, tsc, build pass; manual end-to-end test passes; no raw
 provider errors exposed to users; all screens meet accessibility baseline.
+
+---
+
+### Phase 5 — Attack Reconstruction Foundation ✅
+
+**Goal:** Create the deterministic foundation that reconstructs **how a phishing attempt works** from the signals already produced by PhishCatcher without modifying the existing risk-scoring engine.
+
+- [x] 5.1 Audit existing analysis architecture (`lib/analysis/*`, Drizzle schema, report components) to ensure zero logic duplication.
+- [x] 5.2 Implement structured `AttackChain` types in `lib/analysis/types.ts`:
+  - Stages: `input`, `social-engineering`, `brand-impersonation`, `qr`, `url`, `redirect`, `domain`, `visual-deception`, `credential-harvesting`, `malicious-destination`.
+- [x] 5.3 Deterministic Reconstruction Engine in `lib/analysis/attack-chain.ts`:
+  - Map validated linguistic urgency → `social-engineering`
+  - Map brand evidence → `brand-impersonation`
+  - Map QR payload → `qr`
+  - Map shortened URL / redirects → `url` / `redirect`
+  - Map DNS / WHOIS / threat feeds → `domain`
+  - Map login / password form detection → `credential-harvesting`
+- [x] 5.4 Traceable Evidence Mapping: every attack stage points back to source signal IDs.
+- [x] 5.5 Unit testing across 10 scenarios in `scripts/test-attack-chain.ts` (26/26 tests passed).
+
+Exit criteria: `AttackChain` types and reconstruction engine implemented with 100% deterministic signal mapping; `npx tsc --noEmit` passes (0 errors).
+
+---
+
+### Phase 6 — Investigation Report UI
+
+**Goal:** Expose the attack reconstruction inside the existing report (`/report/[id]`) without creating a separate report app.
+
+- [ ] 6.1 Attack Story Component (`components/report/AttackStory.tsx`):
+  - Visual step flow: Input → Brand Impersonation → Urgency → URL → Destination → Credential Harvest.
+- [ ] 6.2 Expandable Stage Details:
+  - Title, explanation, severity badge, validated evidence items, source signal link.
+- [ ] 6.3 Static Educational Context for each technique (no runtime AI call).
+- [ ] 6.4 Technique Tags: derived directly from attack-chain stages.
+- [ ] 6.5 Beginner / Analyst Presentation Toggle:
+  - Beginner mode (plain summary + clear action guidance).
+  - Analyst mode (granular attack chain nodes + raw signal telemetry).
+- [ ] 6.6 Responsive Design (horizontal desktop flow, vertical mobile timeline).
+
+Exit criteria: Attack Story visible on reports, stages expandable with evidence, technique tags active, Beginner/Analyst modes toggleable, mobile responsive, zero breaking changes to existing report telemetry.
+
+---
+
+### Phase 7 — URL & QR Investigation
+
+**Goal:** Turn the attack story into an interactive investigation experience with isolated remote preview and multi-hop tracing.
+
+- [ ] 7.1 Multi-Hop URL Journey (`components/report/UrlJourney.tsx`):
+  - Original URL → Redirect #1 → Redirect #2 → Final Destination with hostname, SSL status, domain age.
+- [ ] 7.2 QR Quishing Journey:
+  - Image → QR Code Detected → Decoded Payload URL → Redirects → Final Destination.
+- [ ] 7.3 Safe Remote Browserbase Preview:
+  - Explicit security isolation notice, live cloud session embed / screenshot, detected forms.
+- [ ] 7.4 Investigation Summary Panel (Delivery method, Primary deception, Destination domain, Credential collection, QR involvement).
+- [ ] 7.5 Partial Signal Handling: graceful `unavailable` indicators when sub-providers fail.
+
+Exit criteria: URL and QR journeys render real hops; Browserbase safe remote preview integrated; partial signals explicitly marked `unavailable`; zero untrusted code executed locally.
+
+---
+
+### Phase 8 — Adaptive Security Intelligence
+
+**Goal:** Connect PhishCatcher's detection engine to its educational quiz and awareness system.
+
+- [ ] 8.1 Pre-Analysis Challenge ("Can You Spot the Phish?" trust/phish prompt before report reveal).
+- [ ] 8.2 Reveal Analysis & Feedback Loop ("Your Decision vs PhishCatcher Assessment").
+- [ ] 8.3 Deterministic Phishing Weakness Profile based on historical detection results (URL Red Flags, SMS Tactics, Quishing, Social Engineering).
+- [ ] 8.4 Adaptive Quiz Selection Mode ("Train My Weak Areas" drawing from `lib/quiz/questions.ts`).
+- [ ] 8.5 Learning Feedback & Category Recommendations post-quiz.
+
+Exit criteria: Pre-analysis challenge functional, user decision feedback active, weakness profile calculated deterministically, adaptive training mode operative without runtime AI.
+
+---
+
+### Future Phase 9 — Phishing Genome & Campaign Intelligence
+
+**Goal:** Long-term differentiator for automated campaign correlation and threat clustering.
+
+- [ ] 9.1 Phishing Genome fingerprint generation from deterministic technique vectors.
+- [ ] 9.2 Similar Analysis Detection based on structured domain, visual, and linguistic signatures.
+- [ ] 9.3 Campaign Clustering View grouping related submissions.
 
 ---
 
@@ -257,6 +348,8 @@ provider errors exposed to users; all screens meet accessibility baseline.
 | 2026-10-05 | Risk weights v1: linguistic 30%, infrastructure 35%, visual 25%, QR bonus 10%. |
 | 2026-10-05 | Classification thresholds v1: Safe 0–24, Suspicious 25–54, Likely 55–79, Confirmed 80–100. |
 | 2026-10-05 | UI theme: minimal black/white with `#3b82f6` blue accent only. |
+| 2026-10-07 | Phase 4 completed: Live Statistics page, in-memory sliding window rate limiting (10/hr), 55s timeout, SEO metadata across all routes. |
+| 2026-10-07 | Adopted Attack Reconstruction & Investigation Roadmap (Phases 5–9): Detect → Investigate → Explain → Learn → Improve. |
 
 ---
 

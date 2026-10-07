@@ -1,7 +1,24 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Mazzard H';
+  font-weight: 400;
+  font-style: normal;
+  src: url('https://db.onlinewebfonts.com/t/eb5b5ee332420add9a40ee988cb6ac37.woff2') format('woff2'),
+       url('https://db.onlinewebfonts.com/t/eb5b5ee332420add9a40ee988cb6ac37.woff') format('woff'),
+       url('https://db.onlinewebfonts.com/t/eb5b5ee332420add9a40ee988cb6ac37.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Mazzard H';
+  font-weight: 500;
+  font-style: normal;
+  src: url('https://db.onlinewebfonts.com/t/875fffdfa62169a0f131e90f37f1faf4.woff2') format('woff2'),
+       url('https://db.onlinewebfonts.com/t/875fffdfa62169a0f131e90f37f1faf4.woff') format('woff'),
+       url('https://db.onlinewebfonts.com/t/875fffdfa62169a0f131e90f37f1faf4.ttf') format('truetype');
+}
+
 @theme {
-  --font-sans: var(--font-roboto-condensed), sans-serif;
+  --font-sans: 'Mazzard H', var(--font-roboto-condensed), sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-blue-accent: var(--blue-accent);

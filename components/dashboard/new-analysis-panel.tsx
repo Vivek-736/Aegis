@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { Globe2, MessageSquare, Upload, ArrowRight, Loader2, AlertCircle, UploadIcon } from "lucide-react";
+import { Globe2, MessageSquare, Upload, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
-import { UploadDropzone } from "@/lib/uploadthing/client";
+import { useUploadThing } from "@/lib/uploadthing/client";
 
 type Tab = "url" | "sms" | "upload";
+
+const cardShadow = "0 3px 9.1px #3f4a7e0d, 0 1px 29px #3f4a7e1a";
 
 export function NewAnalysisPanel() {
   const router = useRouter();
@@ -20,10 +20,27 @@ export function NewAnalysisPanel() {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { startUpload } = useUploadThing("imageOrDocument", {
+    onClientUploadComplete: (res) => {
+      setIsUploading(false);
+      if (res && res[0]) {
+        setUploadedFile({
+          key: res[0].key,
+          url: res[0].url || res[0].ufsUrl || `https://utfs.io/f/${res[0].key}`,
+          name: res[0].name,
+        });
+      }
+    },
+    onUploadError: (err: Error) => {
+      setIsUploading(false);
+      setError(err.message || "File upload failed. Max size is 10 MB.");
+    },
+  });
+
   const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
-    { id: "url", label: "Paste URL", icon: Globe2 },
-    { id: "sms", label: "SMS / Text", icon: MessageSquare },
-    { id: "upload", label: "Upload File", icon: Upload },
+    { id: "url", label: "Inspect URL", icon: Globe2 },
+    { id: "sms", label: "SMS / Message", icon: MessageSquare },
+    { id: "upload", label: "Upload Image / PDF", icon: Upload },
   ];
 
   const handleSubmit = async () => {
@@ -69,149 +86,246 @@ export function NewAnalysisPanel() {
   return (
     <div className="mx-auto max-w-2xl">
       {/* Tab switcher */}
-      <div className="mb-6 flex gap-1 rounded-2xl border border-border bg-muted/40 p-1">
+      <div
+        className="mb-6 flex gap-1 rounded-full p-1.5"
+        style={{
+          backgroundColor: "rgb(249, 249, 249)",
+          boxShadow: cardShadow,
+        }}
+      >
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => { setTab(id); setError(null); }}
             className={cn(
-              "flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors",
-              tab === id
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+              "flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all"
             )}
+            style={{
+              backgroundColor: tab === id ? "rgb(26, 11, 84)" : "transparent",
+              color: tab === id ? "#ffffff" : "rgb(131, 121, 158)",
+              boxShadow: tab === id ? "0 2px 8px rgba(26, 11, 84, 0.15)" : "none",
+            }}
           >
             <Icon className="size-4" />
-            {label}
+            <span>{label}</span>
           </button>
         ))}
       </div>
 
       {/* Input area */}
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <div
+        className="rounded-[18px] p-7"
+        style={{
+          backgroundColor: "#ffffff",
+          boxShadow: cardShadow,
+          border: "1px solid rgba(0, 0, 0, 0.04)",
+        }}
+      >
         {tab === "url" && (
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-foreground">
-              Suspicious URL
+            <label
+              className="block text-sm font-medium"
+              style={{ color: "rgb(26, 11, 84)" }}
+            >
+              Target Web Address
             </label>
             <input
               type="url"
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-              placeholder="https://suspicious-site.example.com/login"
-              className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-accent/50"
+              placeholder="https://suspicious-domain.com/login"
+              className="w-full rounded-xl px-4 py-3 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#CA45FF]"
+              style={{
+                backgroundColor: "rgb(249, 249, 249)",
+                color: "rgb(26, 11, 84)",
+                border: "1px solid rgba(0, 0, 0, 0.05)",
+              }}
+              onKeyDown={(e) => { if (e.key === "Enter" && !loading) handleSubmit(); }}
             />
-            <p className="text-xs text-muted-foreground">
-              The URL will be analysed for infrastructure signals and rendered in an isolated browser.
+            <p className="text-xs" style={{ color: "rgb(131, 121, 158)" }}>
+              PhishCatcher isolates this URL in a sandboxed Browserbase session and evaluates DNS/WHOIS signals.
             </p>
           </div>
         )}
 
         {tab === "sms" && (
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-foreground">
-              SMS or suspicious message
+            <label
+              className="block text-sm font-medium"
+              style={{ color: "rgb(26, 11, 84)" }}
+            >
+              Message / Email Body Text
             </label>
             <textarea
+              rows={5}
               value={smsInput}
               onChange={(e) => setSmsInput(e.target.value)}
-              rows={6}
-              placeholder="Paste the suspicious message here…"
-              className="w-full resize-none rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-accent/50"
+              placeholder="Paste the suspicious SMS, WhatsApp, or email content here..."
+              className="w-full rounded-xl p-4 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#CA45FF]"
+              style={{
+                backgroundColor: "rgb(249, 249, 249)",
+                color: "rgb(26, 11, 84)",
+                border: "1px solid rgba(0, 0, 0, 0.05)",
+              }}
             />
-            <p className="text-xs text-muted-foreground">
-              Text is analysed for urgency cues, brand impersonation, and embedded URLs.
+            <p className="text-xs" style={{ color: "rgb(131, 121, 158)" }}>
+              NLP heuristics check for artificial urgency, monetary fraud, impersonation cues, and embedded links.
             </p>
           </div>
         )}
 
         {tab === "upload" && (
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-foreground">
-              Image or document
+            <label
+              className="block text-sm font-medium"
+              style={{ color: "rgb(26, 11, 84)" }}
+            >
+              Image, Flyer, or Document (with QR code)
             </label>
             {uploadedFile ? (
-              <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3">
-                <span className="text-sm text-foreground">{uploadedFile.name}</span>
+              <div
+                className="flex items-center justify-between rounded-xl p-3.5"
+                style={{
+                  backgroundColor: "rgb(249, 249, 249)",
+                  border: "1px solid rgba(0, 0, 0, 0.05)",
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="flex size-8 items-center justify-center rounded-lg"
+                    style={{
+                      backgroundColor: "rgba(202, 69, 255, 0.12)",
+                      color: "rgb(202, 69, 255)",
+                    }}
+                  >
+                    <Upload className="size-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium" style={{ color: "rgb(26, 11, 84)" }}>
+                      {uploadedFile.name}
+                    </p>
+                    <p className="text-[11px]" style={{ color: "rgb(131, 121, 158)" }}>
+                      Staged for OCR & QR decoding
+                    </p>
+                  </div>
+                </div>
                 <button
+                  type="button"
                   onClick={() => setUploadedFile(null)}
-                  className="text-xs text-muted-foreground hover:text-foreground"
+                  className="text-xs font-medium hover:underline cursor-pointer"
+                  style={{ color: "rgb(202, 69, 255)" }}
                 >
                   Remove
                 </button>
               </div>
             ) : (
-              <div className="relative">
-                {isUploading && (
-                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-2xl bg-card/85 backdrop-blur-xs">
-                    <Loader2 className="size-6 animate-spin text-blue-accent" />
-                    <p className="mt-2 text-xs font-medium text-foreground">Uploading artifact…</p>
-                  </div>
-                )}
-                <UploadDropzone
-                  endpoint="imageOrDocument"
-                  config={{ mode: "auto" }}
-                  onUploadBegin={() => {
-                    setIsUploading(true);
+              <div
+                className="rounded-xl border border-dashed border-black/[0.12] p-4 text-center transition-all"
+                style={{ backgroundColor: "rgb(249, 249, 249)" }}
+              >
+                <input
+                  id="direct-file-input"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
                     setError(null);
-                  }}
-                  onClientUploadComplete={(res) => {
-                    setIsUploading(false);
-                    const f = res[0];
-                    if (f) {
-                      const downloadUrl =
-                        (f as { ufsUrl?: string; url?: string }).ufsUrl ||
-                        (f as { url?: string }).url ||
-                        `https://utfs.io/f/${f.key}`;
-                      setUploadedFile({ key: f.key, url: downloadUrl, name: f.name });
-                      setError(null);
+                    setIsUploading(true);
+                    try {
+                      const res = await startUpload([file]);
+                      if (res && res[0]) {
+                        setUploadedFile({
+                          key: res[0].key,
+                          url: res[0].url || res[0].ufsUrl || `https://utfs.io/f/${res[0].key}`,
+                          name: res[0].name,
+                        });
+                      } else {
+                        throw new Error("No upload response received");
+                      }
+                    } catch (err: unknown) {
+                      const msg = err instanceof Error ? err.message : "File upload failed. Max size is 10 MB.";
+                      setError(msg);
+                    } finally {
+                      setIsUploading(false);
+                      // Reset input value
+                      e.target.value = "";
                     }
                   }}
-                  onUploadError={(err) => {
-                    setIsUploading(false);
-                    console.error("[UploadThing Error]", err);
-                    setError(err.message || "Failed to upload file. Please check file format and size.");
-                  }}
-                  appearance={{
-                    uploadIcon: "w-8 h-8 text-muted-foreground stroke-1",
-                    container: "border-dashed border-2 border-border p-6 rounded-2xl bg-muted/10",
-                    label: "text-xs font-medium text-foreground mt-2",
-                    allowedContent: "text-[11px] text-muted-foreground mt-1",
-                    button: "text-xs bg-foreground text-background font-medium px-4 py-2 rounded-xl mt-3",
-                  }}
                 />
+
+                <div className="flex flex-col items-center justify-center gap-2 py-2">
+                  <div
+                    className="flex size-9 items-center justify-center rounded-full"
+                    style={{
+                      backgroundColor: "rgba(202, 69, 255, 0.1)",
+                      color: "rgb(202, 69, 255)",
+                    }}
+                  >
+                    <Upload className="size-4" />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="direct-file-input"
+                      className="cursor-pointer inline-block rounded-full px-4 py-1.5 text-xs font-medium text-white shadow-xs transition-opacity hover:opacity-90"
+                      style={{ backgroundColor: "rgb(26, 11, 84)" }}
+                    >
+                      {isUploading ? "Uploading..." : "Choose Image or PDF"}
+                    </label>
+                  </div>
+                  <span className="text-[11px]" style={{ color: "rgb(131, 121, 158)" }}>
+                    or drag & drop file here
+                  </span>
+                </div>
               </div>
             )}
-            <p className="text-xs text-muted-foreground">
-              PNG, JPG, WebP, GIF, or PDF — max 10 MB. QR codes inside images are automatically decoded.
+            <p className="text-[11px]" style={{ color: "rgb(131, 121, 158)" }}>
+              Supported: JPEG, PNG, WebP, GIF, PDF (max 10 MB).
             </p>
           </div>
         )}
 
+        {/* Error message */}
         {error && (
-          <div className="mt-4 flex items-center gap-2 rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-foreground">
-            <AlertCircle className="size-4 shrink-0 text-blue-accent" />
-            {error}
+          <div
+            className="mt-4 flex items-center gap-2 rounded-xl p-3 text-xs"
+            style={{
+              backgroundColor: "rgba(239, 68, 68, 0.08)",
+              color: "rgb(185, 28, 28)",
+            }}
+          >
+            <AlertCircle className="size-4 shrink-0" />
+            <span>{error}</span>
           </div>
         )}
 
-        <button
-          onClick={handleSubmit}
-          disabled={loading || isUploading}
-          className={cn(
-            buttonVariants({ size: "lg" }),
-            "mt-6 w-full gap-2"
-          )}
-        >
-          {loading ? (
-            <><Loader2 className="size-4 animate-spin" /> Analysing…</>
-          ) : isUploading ? (
-            <><Loader2 className="size-4 animate-spin" /> Uploading file…</>
-          ) : (
-            <>Analyse <ArrowRight className="size-4" /></>
-          )}
-        </button>
+        {/* Submit action */}
+        <div className="mt-6 flex justify-end">
+          <button
+            onClick={handleSubmit}
+            disabled={loading || isUploading}
+            className="inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-medium text-white transition-opacity disabled:opacity-50"
+            style={{
+              backgroundColor: "rgb(26, 11, 84)",
+              boxShadow: "0 4px 14px rgba(26, 11, 84, 0.2)",
+            }}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                <span>Running Pipeline Telemetry...</span>
+              </>
+            ) : isUploading ? (
+              <span>Uploading File...</span>
+            ) : (
+              <>
+                <span>Launch Analysis</span>
+                <ArrowRight className="size-4" />
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

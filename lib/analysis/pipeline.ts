@@ -6,6 +6,7 @@ import { analyzeInfrastructure } from "./infrastructure";
 import { analyzeVisual } from "./visual";
 import { fuseRiskScores } from "./fusion";
 import { generateExplanation } from "./explanation";
+import { reconstructAttackChain } from "./attack-chain";
 import type {
   AnalysisPipelineResult,
   ArtifactResult,
@@ -233,6 +234,14 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Analysi
     },
   };
 
+  const attackChain = reconstructAttackChain({
+    inputType: input.inputType,
+    inputText: input.inputText,
+    fileUrl: input.fileUrl,
+    artifacts: finalState.artifacts,
+    signals: finalState.signals,
+  });
+
   return {
     artifacts: finalState.artifacts,
     signals: finalState.signals,
@@ -240,5 +249,6 @@ export async function runAnalysisPipeline(input: PipelineInput): Promise<Analysi
     explanation: finalState.explanation,
     screenshotUrl: finalState.liveSessionUrl,
     browserbaseSessionId: finalState.liveSessionId,
+    attackChain,
   };
 }
